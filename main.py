@@ -45,36 +45,44 @@ Estimilated_UK_sizes = {
     24: "OO",
 }
 
-
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     button_1 = types.KeyboardButton(text="Запустить")
     keyboard.add(button_1)
     await message.answer("Добро пожаловать на онлайн \n Я виртуальный помощник  от  \n Жми «запустить» и мы начнем", reply_markup=keyboard)
-    await message.answer_document(open("asd.pdf", "rb"))
-    await Form.name.set()
+    await Form.name1.set()
+
+@dp.message_handler(commands=['restart'])
+async def restart(message: types.Message):
+    await message.answer("Вы перезапустили бота")
+    await message.answer("Как я могу к тебе обращаться?")
+    await Form.name1.set()
 
 
-@dp.message_handler(lambda message: message.text == "Запустить", state=Form.name)
+@dp.message_handler(lambda message: message.text == "Запустить", state=Form.name1)
 async def process_start(message: types.Message, state: FSMContext):
     await message.answer("Как я могу к тебе обращаться?")
-    await Form.name.set()
+    await Form.name2.set()
 
 
-@dp.message_handler(state=Form.name)
+@dp.message_handler(state=Form.name2)
 async def process_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['name'] = message.text
     await message.answer(f"Отлично, {message.text}, подскажи пожалуйста, сколько тебе лет?")
     await Form.diff.set()
 
+
 @dp.message_handler(state=Form.diff)
 async def process_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['age'] = message.text
-    await message.answer(f"Расскажи пожалуйста, с какими трудностями ты сталкиваешься при подборе? ")
-    await Form.age.set()
+    if data["age"].isdigit():
+        await message.answer(f"Расскажи пожалуйста, с какими трудностями ты сталкиваешься при подборе? ")
+        await Form.age.set()
+    else:
+        await message.answer('Введи целое положительное число')        
 
 @dp.message_handler(state=Form.age)
 async def process_age(message: types.Message, state: FSMContext):
@@ -131,7 +139,7 @@ async def process_OPGinhale(message: types.Message, state: FSMContext):
 async def process_OPGouthale(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['OPGinhale'] = message.text
-    if data['OPGinhale'].isdigit():
+    if data['OPGinhale'].isdigit() and 50 <= int(data['OPGinhale']) <= 150:
         await message.answer("Сделай замеры ОПГ выдох")
         await Form.OG.set()
     else:
@@ -142,7 +150,7 @@ async def process_OPGouthale(message: types.Message, state: FSMContext):
 async def process_OG(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['OPGouthale'] = message.text
-    if data['OPGouthale'].isdigit():
+    if data['OPGouthale'].isdigit() and 50 <= int(data['OPGouthale']) <= 150:
         await message.answer("Сделай замеры ОГ")
         await Form.size.set()
     else:
@@ -153,7 +161,7 @@ async def process_size(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['OG'] = message.text
 
-    if data['OG'].isdigit():
+    if data['OG'].isdigit() and 50 <= int(data['OG']) <= 150:
         await message.answer(" Мы уже определили твой размер___! Осталось узнать твой размер____ ")
         await Form.pdf1.set()
     else:
@@ -222,6 +230,8 @@ async def process_end(message: types.Message, state: FSMContext):
         data['number'] = message.text
     if data['number'].isdigit():
         await message.answer("Превосходно! Мы свяжемся с тобой в ближайшее время. Благодарим за твой выбор Bra Studio")
+        await message.answer("Напишите 'Да' если хотите перезапустить бота")
+        await Form.end2.set()
         async with state.proxy() as data:
             FirstFormula = int(data['OPGinhale']) - 8
             SecondFormula = (int(data['OG']) - int(data['OPGinhale'])) / 2.54
@@ -230,6 +240,8 @@ async def process_end(message: types.Message, state: FSMContext):
             if SecondFormula in Estimilated_UK_sizes:
                 size = Estimilated_UK_sizes[SecondFormula]
                 data["Formula"] = (str(FirstFormula) + size)
+            else: 
+                data['Formula'] = "Данные не подходят под таблицу"
 
             data["ID"] = message.from_user.id
             data["UserName"] = message.from_user.full_name
@@ -240,10 +252,14 @@ async def process_end(message: types.Message, state: FSMContext):
 
             wks.append_table(x, start='A2', end=None,
                             dimension='ROWS', overwrite=False)
-            await state.finish()
+        await message.answer(data)
     else:
         await message.answer('Введи целое положительное число')
 
+@dp.message_handler(state=Form.end2)
+async def processend2(message: types.Message, state: FSMContext):
+    await message.answer("Как к тебе обращаться?")
+    await Form.name2.set()
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

@@ -1,7 +1,8 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 class Form(StatesGroup):
-    name = State()
+    name1 = State()
+    name2 = State()
     age = State()
     diff = State()
     F = State()
