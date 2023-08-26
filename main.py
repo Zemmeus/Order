@@ -155,7 +155,6 @@ async def process_size(message: types.Message, state: FSMContext):
 
     if data['OG'].isdigit():
         await message.answer(" Мы уже определили твой размер___! Осталось узнать твой размер____ ")
-        await message.answer(data)
         await Form.pdf1.set()
     else:
         await message.answer('Введи целое положительное число')
