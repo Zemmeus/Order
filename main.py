@@ -9,11 +9,11 @@ from aiogram.types import InputMediaDocument
 from states import Form
 import pygsheets
 
-path='studious-rhythm-390907-798ae3194f44.json'
+path='studious-rhythm-###.json'
 gc = pygsheets.authorize(service_account_file=path)
 sh = gc.open('pythontest')
 wks = sh[0]
-bot = Bot(token='6337739495:AAE7Qveg0EY9__5gyFQuIERakbbJfZUkW5U')
+bot = Bot(token='###')
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
@@ -264,14 +264,4 @@ async def processend2(message: types.Message, state: FSMContext):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-
-# @dp.message_handler(state=Form.end)
-# async def process_size(message: types.Message, state: FSMContext):
-#     async with state.proxy() as data:
-#         data['number'] = message.text
-#     if data['number'].isdigit():
-#         await message.answer("Превосходно! Мы свяжемся с тобой в ближайшее время. Благодарим за твой выбор Bra Studio")
-#         await Form.pdf1.set()
-#     else:
-#         await message.answer('Введи целое положительное число')
 
